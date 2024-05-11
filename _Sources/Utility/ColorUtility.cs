@@ -1,7 +1,7 @@
 ﻿using System.Drawing;
 using OpenTK.Mathematics;
 
-namespace Entropy.Application;
+namespace Entropy.Utility;
 
 public static class ColorUtility
 {

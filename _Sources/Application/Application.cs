@@ -1,5 +1,6 @@
 ﻿
-using System.Drawing;
+using Entropy.Rendering;
+using Entropy.Utility;
 using OpenTK.Graphics.OpenGL;
 using OpenTK.Windowing.Common;
 using OpenTK.Windowing.Desktop;
@@ -15,12 +16,17 @@ namespace Entropy.Application
         static void Main(string[] args)
         {
             using Game game = new Game(800 ,600,  "Entropy Engine");
+            Console.WriteLine("Welcome !");
             game.Run();
         }
     }
     
     public class Game : GameWindow
     {
+        private int m_vertexBuffer;
+
+        private Shader? m_shader;
+        
         public Game(int width, int height, string title) :
             base(GameWindowSettings.Default, new NativeWindowSettings() { ClientSize = (width, height), Title = title})
         {
@@ -36,8 +42,34 @@ namespace Entropy.Application
             base.OnLoad();
             
             GL.ClearColor(ColorUtility.Red);
+
+            m_shader = new Shader("shader.vert", "shader.frag");
+            
+            float[] vertices = {
+                -0.5f, -0.5f, 0f,
+                0.5f, -0.5f, 0f,
+                0.5f, 0.5f, 0f
+            };
+
+            unsafe
+            {
+                fixed (float* vertexPtr = &vertices[0])
+                {
+                    m_vertexBuffer = GL.GenBuffer();
+                    GL.BindBuffer(BufferTarget.ArrayBuffer, m_vertexBuffer);
+                    GL.BufferData(BufferTarget.ArrayBuffer, vertices.Length * sizeof(float), vertexPtr, BufferUsage.StaticDraw);
+                }
+            }
+
         }
-        
+
+        protected override void OnUnload()
+        {
+            base.OnUnload();
+            
+            //m_shader?.Dispose();
+        }
+
         protected override void OnUpdateFrame(FrameEventArgs args)
         {
             base.OnUpdateFrame(args);
@@ -53,8 +85,11 @@ namespace Entropy.Application
             base.OnRenderFrame(args);
             
             GL.Clear(ClearBufferMask.ColorBufferBit);
+
+
             
             SwapBuffers();
+            
         }
 
         protected override void OnFramebufferResize(FramebufferResizeEventArgs e)
